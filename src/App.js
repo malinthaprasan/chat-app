@@ -49,12 +49,12 @@ function App() {
   const [newMessage, setNewMessage] = useState('');
   const [networkLogs, setNetworkLogs] = useState([]);
   
-  const [logsPanelOpen, setLogsPanelOpen] = useState(true);
+  const [logsPanelOpen, setLogsPanelOpen] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [expandedLogs, setExpandedLogs] = useState(new Set()); // Start with no logs expanded
   const [isLoading, setIsLoading] = useState(false);
   const [showConfig, setShowConfig] = useState(false);
-  const [networkPanelWidth, setNetworkPanelWidth] = useState(400);
+  const [networkPanelWidth, setNetworkPanelWidth] = useState(Math.floor(window.innerWidth / 3));
   const [isDragging, setIsDragging] = useState(false);
   const [apiConfig, setApiConfig] = useState({
     url: '',
@@ -254,8 +254,10 @@ Authorization: Bearer ${apiConfig.token}`),
   const handleMouseMove = (e) => {
     if (isDragging) {
       const newWidth = window.innerWidth - e.clientX;
-      // Constrain width between 300px and 800px
-      const constrainedWidth = Math.max(300, Math.min(800, newWidth));
+      // Constrain width between 1/4 and 1/2 of screen width
+      const minWidth = Math.floor(window.innerWidth / 4);
+      const maxWidth = Math.floor(window.innerWidth / 2);
+      const constrainedWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
       setNetworkPanelWidth(constrainedWidth);
     }
   };
@@ -298,6 +300,11 @@ Authorization: Bearer ${apiConfig.token}`),
       }
       return path;
     } catch (error) {
+      // If URL parsing fails, try to remove query parameters manually
+      const queryIndex = url.indexOf('?');
+      if (queryIndex !== -1) {
+        return url.substring(0, queryIndex);
+      }
       return url;
     }
   };
