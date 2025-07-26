@@ -1,0 +1,243 @@
+/* Reset and base styles */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f5f5f5;
+}
+
+/* Custom scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Message bubble animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-bubble {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+/* Network logs styling */
+.network-log-accordion {
+  transition: all 0.2s ease-in-out;
+}
+
+.network-log-accordion:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Code block styling */
+pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  line-height: 1.4;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .message-bubble {
+    max-width: 85% !important;
+  }
+}
+
+/* Loading animation for send button */
+.send-button-loading {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Drag handle styles */
+.drag-handle {
+  transition: background-color 0.2s ease;
+}
+
+.drag-handle:hover {
+  background-color: rgba(25, 118, 210, 0.3) !important;
+}
+
+.drag-handle:active {
+  background-color: rgba(25, 118, 210, 0.5) !important;
+}
+
+/* Prevent text selection during drag */
+.dragging {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Smooth width transitions */
+.network-panel {
+  transition: width 0.1s ease-out;
+}
+
+/* Avatar hover effects */
+.avatar-hover {
+  transition: transform 0.2s ease-in-out;
+}
+
+.avatar-hover:hover {
+  transform: scale(1.1);
+}
+
+/* Network log chip styling */
+.method-chip {
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+/* Timestamp styling */
+.timestamp-text {
+  font-size: 0.7rem;
+  opacity: 0.7;
+  font-style: italic;
+}
+
+/* Input field focus styles */
+.input-field:focus-within {
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+  border-radius: 4px;
+}
+
+/* Drawer backdrop */
+.drawer-backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Network logs panel header */
+.logs-panel-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 16px;
+  border-radius: 4px 4px 0 0;
+}
+
+/* Message input area */
+.message-input-area {
+  background: white;
+  border-top: 1px solid #e0e0e0;
+  padding: 16px;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Chat messages container */
+.chat-messages-container {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 400px;
+}
+
+/* Network log details */
+.log-details-container {
+  background: #fafafa;
+  border-radius: 4px;
+  padding: 8px;
+  margin: 4px 0;
+}
+
+/* Method color coding */
+.method-get {
+  background-color: #4caf50 !important;
+  color: white !important;
+}
+
+.method-post {
+  background-color: #2196f3 !important;
+  color: white !important;
+}
+
+.method-put {
+  background-color: #ff9800 !important;
+  color: white !important;
+}
+
+.method-delete {
+  background-color: #f44336 !important;
+  color: white !important;
+}
+
+/* Responsive grid adjustments */
+@media (max-width: 1200px) {
+  .log-grid-item {
+    width: 100% !important;
+  }
+}
+
+/* Smooth transitions */
+.smooth-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Focus styles for accessibility */
+.focus-visible {
+  outline: 2px solid #1976d2;
+  outline-offset: 2px;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #121212;
+    color: #ffffff;
+  }
+  
+  .chat-messages-container {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d3748 100%);
+  }
+  
+  .log-details-container {
+    background: #2d3748;
+  }
+}
