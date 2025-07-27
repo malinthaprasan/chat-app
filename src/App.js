@@ -183,6 +183,7 @@ function App() {
             method: 'POST',
             url: fullUrl,
             resourcePath: getResourcePath(fullUrl),
+            endpointType: apiConfig.selectedEndpoint === 'endpoint1' ? 'DIR' : 'EGW',
             responseTime: responseTime,
             statusCode: response.status,
             statusText: response.statusText,
@@ -225,6 +226,7 @@ function App() {
             method: 'POST',
             url: fullUrl,
             resourcePath: getResourcePath(fullUrl),
+            endpointType: apiConfig.selectedEndpoint === 'endpoint1' ? 'DIR' : 'EGW',
             responseTime: responseTime,
             statusCode: response.status,
             statusText: response.statusText,
@@ -267,6 +269,7 @@ function App() {
             method: 'POST',
             url: fullUrl,
             resourcePath: getResourcePath(fullUrl),
+            endpointType: apiConfig.selectedEndpoint === 'endpoint1' ? 'DIR' : 'EGW',
             responseTime: responseTime,
             statusCode: response.status,
             statusText: response.statusText,
@@ -362,6 +365,7 @@ function App() {
             method: 'POST',
             url: fullUrl,
             resourcePath: getResourcePath(fullUrl),
+            endpointType: apiConfig.selectedEndpoint === 'endpoint1' ? 'DIR' : 'EGW',
             responseTime: 0, // No response time for errors
             statusCode: 500,
             statusText: 'Internal Error',
@@ -598,6 +602,7 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
             method: 'POST',
             url: fullUrl,
             resourcePath: getResourcePath(fullUrl),
+            endpointType: apiConfig.selectedEndpoint === 'endpoint1' ? 'DIR' : 'EGW',
             responseTime: responseTime,
             statusCode: response.status,
             statusText: response.statusText,
@@ -639,6 +644,7 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
             method: 'POST',
             url: fullUrl,
             resourcePath: getResourcePath(fullUrl),
+            endpointType: apiConfig.selectedEndpoint === 'endpoint1' ? 'DIR' : 'EGW',
             responseTime: responseTime,
             statusCode: response.status,
             statusText: response.statusText,
@@ -680,6 +686,7 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
             method: 'POST',
             url: fullUrl,
             resourcePath: getResourcePath(fullUrl),
+            endpointType: apiConfig.selectedEndpoint === 'endpoint1' ? 'DIR' : 'EGW',
             responseTime: responseTime,
             statusCode: response.status,
             statusText: response.statusText,
@@ -721,6 +728,7 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
           method: 'POST',
           url: fullUrl,
           resourcePath: getResourcePath(fullUrl),
+          endpointType: apiConfig.selectedEndpoint === 'endpoint1' ? 'DIR' : 'EGW',
           responseTime: responseTime,
           statusCode: response.status,
           statusText: response.statusText,
@@ -774,6 +782,7 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
             method: 'POST',
             url: fullUrl,
             resourcePath: getResourcePath(fullUrl),
+            endpointType: apiConfig.selectedEndpoint === 'endpoint1' ? 'DIR' : 'EGW',
             responseTime: 0, // No response time for errors
             statusCode: 500,
             statusText: 'Internal Error',
@@ -937,9 +946,23 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
                   size="small"
                   sx={{ fontWeight: 600 }}
                 />
-                <Typography variant="body2" sx={{ flex: 1, fontFamily: 'monospace' }}>
-                  {log.resourcePath || log.url}
-                </Typography>
+                                  <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Chip
+                      label={`[${log.endpointType || 'DIR'}]`}
+                      size="small"
+                      sx={{
+                        backgroundColor: (log.endpointType || 'DIR') === 'DIR' ? '#e3f2fd' : '#f3e5f5',
+                        color: (log.endpointType || 'DIR') === 'DIR' ? '#1976d2' : '#7b1fa2',
+                        fontFamily: 'monospace',
+                        fontWeight: 600,
+                        fontSize: '0.7rem',
+                        height: 20
+                      }}
+                    />
+                    <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
+                      /chat/completions
+                    </Typography>
+                  </Box>
                               <Typography 
                 variant="caption" 
                 sx={{ 
@@ -1046,7 +1069,7 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             AskForBiz
           </Typography>
-          <FormControl size="small" sx={{ width: 180, mr: 2, display: { xs: 'none', md: 'block' } }}>
+          <FormControl size="small" sx={{ width: 220, mr: 2, display: { xs: 'none', md: 'block' } }}>
             <Select
               value={apiConfig.selectedEndpoint}
               onChange={(e) => setApiConfig(prev => ({ ...prev, selectedEndpoint: e.target.value }))}
@@ -1066,8 +1089,8 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
                 }
               }}
             >
-              <MenuItem value="endpoint1">Direct</MenuItem>
-              <MenuItem value="endpoint2">Via Egress GW</MenuItem>
+              <MenuItem value="endpoint1">Direct (DIR)</MenuItem>
+              <MenuItem value="endpoint2">Via Egress GW (EGW)</MenuItem>
             </Select>
           </FormControl>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -1459,12 +1482,12 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
                 <FormControlLabel 
                   value="endpoint1" 
                   control={<Radio />} 
-                  label="Direct" 
+                  label="Direct (DIR)" 
                 />
                 <FormControlLabel 
                   value="endpoint2" 
                   control={<Radio />} 
-                  label="Via Egress GW" 
+                  label="Via Egress GW (EGW)" 
                 />
               </RadioGroup>
             </FormControl>
@@ -1473,7 +1496,7 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
             {apiConfig.selectedEndpoint === 'endpoint1' && (
               <Paper sx={{ p: 2, mb: 3, border: 2, borderColor: 'primary.main' }}>
                 <Typography variant="h6" sx={{ mb: 2, color: 'primary.main' }}>
-                  Direct
+                  Direct (DIR)
                 </Typography>
                 <TextField
                   fullWidth
@@ -1508,7 +1531,7 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
             {apiConfig.selectedEndpoint === 'endpoint2' && (
               <Paper sx={{ p: 2, border: 2, borderColor: 'primary.main' }}>
                 <Typography variant="h6" sx={{ mb: 2, color: 'primary.main' }}>
-                  Via Egress GW
+                  Via Egress GW (EGW)
                 </Typography>
                 <TextField
                   fullWidth
