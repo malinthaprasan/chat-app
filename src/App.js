@@ -35,11 +35,12 @@ import {
   SmartToy as BotIcon,
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
-  Settings as SettingsIcon,
   Visibility as VisibilityIcon,
   VisibilityOff as VisibilityOffIcon
 } from '@mui/icons-material';
-import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
+import CleaningServicesOutlinedIcon from '@mui/icons-material/CleaningServicesOutlined';
+import PlagiarismOutlinedIcon from '@mui/icons-material/PlagiarismOutlined';
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import './App.css';
 
 function App() {
@@ -567,7 +568,14 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
                 <Typography variant="body2" sx={{ flex: 1, fontFamily: 'monospace' }}>
                   {log.resourcePath || log.url}
                 </Typography>
-                              <Typography variant="caption" color="text.secondary" sx={{ mr: 1 }}>
+                              <Typography 
+                variant="caption" 
+                sx={{ 
+                  mr: 1,
+                  color: log.responseTime ? (log.responseTime < 2000 ? 'success.main' : 'warning.main') : 'text.secondary',
+                  fontWeight: log.responseTime ? 600 : 400
+                }}
+              >
                 {log.responseTime ? `${log.responseTime}ms` : ''}
               </Typography>
               <Typography variant="caption" color="text.secondary" sx={{ mr: 1 }}>
@@ -614,7 +622,7 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
                   <Divider sx={{ my: 1.5 }} />
 
                   {/* Response Details */}
-                  <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600, color: 'secondary.main' }}>
+                  <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600, color: 'primary.main' }}>
                     Response
                   </Typography>
                   
@@ -673,7 +681,7 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
               onClick={handleClearChat}
               sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', justifyContent: 'center', height: 40, width: 40 }}
             >
-              <CleaningServicesIcon />
+              <CleaningServicesOutlinedIcon />
             </IconButton>
             <IconButton
               color="inherit"
@@ -681,7 +689,7 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
               onClick={() => setLogsPanelOpen(!logsPanelOpen)}
               sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', justifyContent: 'center', height: 40, width: 40 }}
             >
-              {logsPanelOpen ? <VisibilityOffIcon /> : <VisibilityIcon />}
+              <PlagiarismOutlinedIcon />
             </IconButton>
             <IconButton
               color="inherit"
@@ -689,7 +697,7 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
               onClick={() => setShowConfig(true)}
               sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', justifyContent: 'center', height: 40, width: 40 }}
             >
-              <SettingsIcon />
+              <SettingsOutlinedIcon />
             </IconButton>
           </Box>
         </Toolbar>
