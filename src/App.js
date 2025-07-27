@@ -332,10 +332,34 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
   const maskSensitiveHeaders = (headersString) => {
     if (!headersString) return headersString;
     
+    // Headers to completely remove
+    const headersToRemove = [
+      'x-ms-client-request-id',
+      'x-ms-deployment-name',
+      'x-ms-rai-invoked',
+      'x-ms-region',
+      'x-ratelimit-limit-requests',
+      'x-ratelimit-limit-tokens',
+      'x-ratelimit-remaining-requests',
+      'x-ratelimit-remaining-tokens',
+      'azureml-model-session',
+      'apim-request-id'
+    ];
+    
     return headersString
       .split('\n')
       .map(line => {
         const trimmedLine = line.trim();
+        
+        // Check if this line should be completely removed
+        const shouldRemove = headersToRemove.some(header => 
+          trimmedLine.toLowerCase().startsWith(header.toLowerCase() + ':')
+        );
+        if (shouldRemove) {
+          return null; // This will be filtered out
+        }
+        
+        // Check if this line should be masked
         if (trimmedLine.toLowerCase().startsWith('authorization:') || 
             trimmedLine.toLowerCase().startsWith('api-key:') ||
             trimmedLine.toLowerCase().startsWith('x-api-key:') ||
@@ -350,6 +374,7 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
         }
         return line;
       })
+      .filter(line => line !== null) // Remove null lines
       .join('\n');
   };
 
