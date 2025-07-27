@@ -27,6 +27,7 @@ import {
   RadioGroup,
   Select,
   MenuItem,
+  Tooltip,
   useTheme,
   useMediaQuery
 } from '@mui/material';
@@ -39,7 +40,8 @@ import {
   ExpandLess as ExpandLessIcon,
   Visibility as VisibilityIcon,
   VisibilityOff as VisibilityOffIcon,
-  Stop as StopIcon
+  Stop as StopIcon,
+  Replay as ReplayIcon
 } from '@mui/icons-material';
 import CleaningServicesOutlinedIcon from '@mui/icons-material/CleaningServicesOutlined';
 import PlagiarismOutlinedIcon from '@mui/icons-material/PlagiarismOutlined';
@@ -488,6 +490,292 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
     }
   };
 
+  const handleReplayMessage = (messageText) => {
+    // Send the message directly with the provided text
+    if (messageText.trim() && !isLoading) {
+      const userMessage = {
+        id: messages.length + 1,
+        text: messageText,
+        sender: 'user',
+        timestamp: new Date().toLocaleTimeString()
+      };
+      
+      setMessages(prev => [...prev, userMessage]);
+      setIsLoading(true);
+      
+      // Create abort controller for this request
+      const controller = new AbortController();
+      setAbortController(controller);
+      
+      // Get selected endpoint configuration
+      const selectedConfig = apiConfig[apiConfig.selectedEndpoint];
+      
+      // Prepare request data
+      const requestData = {
+        model: "gpt-4.1",
+        messages: [
+          {
+            role: "user",
+            content: messageText
+          }
+        ]
+      };
+
+      const requestBody = JSON.stringify(requestData, null, 2);
+      const requestHeaders = {
+        'accept': 'application/json',
+        'Content-Type': 'application/json'
+      };
+      
+      // Add appropriate authorization header based on endpoint type
+      if (selectedConfig.authType === 'bearer') {
+        requestHeaders['Authorization'] = `Bearer ${selectedConfig.key}`;
+      } else if (selectedConfig.authType === 'test-key') {
+        requestHeaders['Test-Key'] = selectedConfig.key;
+      }
+
+      // Make API call with timing
+      const fullUrl = getFullApiUrl();
+      const startTime = performance.now();
+      
+      fetch(fullUrl, {
+        method: 'POST',
+        headers: requestHeaders,
+        body: requestBody,
+        signal: controller.signal
+      })
+      .then(async (response) => {
+        const endTime = performance.now();
+        const responseTime = Math.round(endTime - startTime);
+
+        let responseData;
+        try {
+          responseData = await response.json();
+        } catch (jsonError) {
+          // Handle cases where response has no body or invalid JSON
+          responseData = null;
+        }
+        
+        // Check for Azure content safety violation
+        if (responseData && responseData.code === 900514) {
+          const errorMessage = {
+            id: messages.length + 2,
+            text: 'Content blocked due to Azure safety policy violation.',
+            sender: 'bot',
+            timestamp: new Date().toLocaleTimeString(),
+            isError: true
+          };
+          
+          setMessages(prev => [...prev, errorMessage]);
+          
+          // Add error log
+          const errorLog = {
+            id: networkLogs.length + 1,
+            timestamp: new Date().toLocaleTimeString(),
+            method: 'POST',
+            url: fullUrl,
+            resourcePath: getResourcePath(fullUrl),
+            responseTime: responseTime,
+            statusCode: response.status,
+            statusText: response.statusText,
+            requestBody: requestBody,
+            requestHeaders: maskSensitiveHeaders(
+              Object.entries(requestHeaders)
+                .map(([key, value]) => `${key}: ${value}`)
+                .join('\n')
+            ),
+            responseBody: JSON.stringify(responseData, null, 2),
+            responseHeaders: maskSensitiveHeaders(
+              Array.from(response.headers.entries())
+                .map(([key, value]) => `${key}: ${value}`)
+                .join('\n')
+            )
+          };
+          
+          setNetworkLogs(prev => [errorLog, ...prev]);
+          setExpandedLogs(prev => new Set([errorLog.id, ...prev]));
+          return;
+        }
+        
+        // Check for authentication failure
+        if (response.status === 401) {
+          const errorMessage = {
+            id: messages.length + 2,
+            text: 'Authentication failed. Please check your API credentials.',
+            sender: 'bot',
+            timestamp: new Date().toLocaleTimeString(),
+            isError: true
+          };
+          
+          setMessages(prev => [...prev, errorMessage]);
+          
+          // Add error log
+          const errorLog = {
+            id: networkLogs.length + 1,
+            timestamp: new Date().toLocaleTimeString(),
+            method: 'POST',
+            url: fullUrl,
+            resourcePath: getResourcePath(fullUrl),
+            responseTime: responseTime,
+            statusCode: response.status,
+            statusText: response.statusText,
+            requestBody: requestBody,
+            requestHeaders: maskSensitiveHeaders(
+              Object.entries(requestHeaders)
+                .map(([key, value]) => `${key}: ${value}`)
+                .join('\n')
+            ),
+            responseBody: responseData ? JSON.stringify(responseData, null, 2) : 'No response body',
+            responseHeaders: maskSensitiveHeaders(
+              Array.from(response.headers.entries())
+                .map(([key, value]) => `${key}: ${value}`)
+                .join('\n')
+            )
+          };
+          
+          setNetworkLogs(prev => [errorLog, ...prev]);
+          setExpandedLogs(prev => new Set([errorLog.id, ...prev]));
+          return;
+        }
+        
+        // Check for rate limiting (429)
+        if (response.status === 429) {
+          const errorMessage = {
+            id: messages.length + 2,
+            text: 'Too many requests.',
+            sender: 'bot',
+            timestamp: new Date().toLocaleTimeString(),
+            isError: true
+          };
+          
+          setMessages(prev => [...prev, errorMessage]);
+          
+          // Add error log
+          const errorLog = {
+            id: networkLogs.length + 1,
+            timestamp: new Date().toLocaleTimeString(),
+            method: 'POST',
+            url: fullUrl,
+            resourcePath: getResourcePath(fullUrl),
+            responseTime: responseTime,
+            statusCode: response.status,
+            statusText: response.statusText,
+            requestBody: requestBody,
+            requestHeaders: maskSensitiveHeaders(
+              Object.entries(requestHeaders)
+                .map(([key, value]) => `${key}: ${value}`)
+                .join('\n')
+            ),
+            responseBody: responseData ? JSON.stringify(responseData, null, 2) : 'No response body',
+            responseHeaders: maskSensitiveHeaders(
+              Array.from(response.headers.entries())
+                .map(([key, value]) => `${key}: ${value}`)
+                .join('\n')
+            )
+          };
+          
+          setNetworkLogs(prev => [errorLog, ...prev]);
+          setExpandedLogs(prev => new Set([errorLog.id, ...prev]));
+          return;
+        }
+        
+        // Extract bot response from the API response
+        const botResponse = responseData && responseData.choices && responseData.choices[0] && responseData.choices[0].message ? responseData.choices[0].message.content : 'No response received';
+        
+        const botMessage = {
+          id: messages.length + 2,
+          text: botResponse,
+          sender: 'bot',
+          timestamp: new Date().toLocaleTimeString()
+        };
+        
+        setMessages(prev => [...prev, botMessage]);
+        
+        // Add network log for this interaction
+        const newLog = {
+          id: networkLogs.length + 1,
+          timestamp: new Date().toLocaleTimeString(),
+          method: 'POST',
+          url: fullUrl,
+          resourcePath: getResourcePath(fullUrl),
+          responseTime: responseTime,
+          statusCode: response.status,
+          statusText: response.statusText,
+          requestBody: requestBody,
+          requestHeaders: maskSensitiveHeaders(
+            Object.entries(requestHeaders)
+              .map(([key, value]) => `${key}: ${value}`)
+              .join('\n')
+          ),
+          responseBody: JSON.stringify(responseData, null, 2),
+          responseHeaders: maskSensitiveHeaders(
+            Array.from(response.headers.entries())
+              .map(([key, value]) => `${key}: ${value}`)
+              .join('\n')
+          )
+        };
+        
+        setNetworkLogs(prev => [newLog, ...prev]);
+        // Auto-expand the new log entry
+        setExpandedLogs(prev => new Set([newLog.id, ...prev]));
+      })
+      .catch((error) => {
+        if (error.name === 'AbortError') {
+          // Request was cancelled by user
+          const cancelMessage = {
+            id: messages.length + 2,
+            text: 'Request cancelled.',
+            sender: 'bot',
+            timestamp: new Date().toLocaleTimeString(),
+            isError: true
+          };
+          setMessages(prev => [...prev, cancelMessage]);
+        } else {
+          console.error('Error making API call:', error);
+          
+          // Add error message
+          const errorMessage = {
+            id: messages.length + 2,
+            text: 'Sorry, I encountered an error while processing your request. Please try again.',
+            sender: 'bot',
+            timestamp: new Date().toLocaleTimeString(),
+            isError: true
+          };
+          
+          setMessages(prev => [...prev, errorMessage]);
+          
+          // Add error log
+          const errorLog = {
+            id: networkLogs.length + 1,
+            timestamp: new Date().toLocaleTimeString(),
+            method: 'POST',
+            url: fullUrl,
+            resourcePath: getResourcePath(fullUrl),
+            responseTime: 0, // No response time for errors
+            statusCode: 500,
+            statusText: 'Internal Error',
+            requestBody: JSON.stringify({
+              model: "gpt-4.1",
+              messages: [{ role: "user", content: messageText }]
+            }, null, 2),
+            requestHeaders: maskSensitiveHeaders(`accept: application/json
+Content-Type: application/json
+${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig.key}` : `Test-Key: ${selectedConfig.key}`}`),
+            responseBody: JSON.stringify({ error: error.message }, null, 2),
+            responseHeaders: 'Content-Type: application/json'
+          };
+          
+          setNetworkLogs(prev => [errorLog, ...prev]);
+          setExpandedLogs(prev => new Set([errorLog.id, ...prev]));
+        }
+      })
+      .finally(() => {
+        setIsLoading(false);
+        setAbortController(null);
+      });
+    }
+  };
+
   // Add and remove event listeners
   useEffect(() => {
     if (isDragging) {
@@ -799,7 +1087,12 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
                       backgroundColor: message.isError ? '#ffebee' : message.sender === 'user' ? 'primary.light' : 'white',
                       color: message.isError ? '#c62828' : message.sender === 'user' ? 'white' : 'text.primary',
                       border: message.isError ? 1 : 0,
-                      borderColor: message.isError ? '#ef5350' : 'transparent'
+                      borderColor: message.isError ? '#ef5350' : 'transparent',
+                      position: 'relative',
+                      '&:hover .replay-button': {
+                        opacity: 1,
+                        visibility: 'visible'
+                      }
                     }}
                   >
                     {message.isError ? (
@@ -868,6 +1161,33 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
                     >
                       {message.timestamp}
                     </Typography>
+                    {message.sender === 'user' && (
+                      <Tooltip title="Replay" placement="top">
+                        <IconButton
+                          className="replay-button"
+                          size="small"
+                          onClick={() => handleReplayMessage(message.text)}
+                          sx={{
+                            position: 'absolute',
+                            top: 4,
+                            right: 4,
+                            opacity: 0,
+                            visibility: 'hidden',
+                            transition: 'opacity 0.2s ease, visibility 0.2s ease',
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            color: 'primary.main',
+                            width: 24,
+                            height: 24,
+                            '&:hover': {
+                              backgroundColor: 'rgba(255, 255, 255, 1)',
+                              transform: 'scale(1.1)'
+                            }
+                          }}
+                        >
+                          <ReplayIcon sx={{ fontSize: 16 }} />
+                        </IconButton>
+                      </Tooltip>
+                    )}
                   </Paper>
                 </ListItem>
               ))}
