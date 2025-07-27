@@ -182,6 +182,48 @@ function App() {
           return;
         }
         
+        // Check for authentication failure
+        if (response.status === 401) {
+          const errorMessage = {
+            id: messages.length + 2,
+            text: 'Authentication failed. Please check your API credentials.',
+            sender: 'bot',
+            timestamp: new Date().toLocaleTimeString(),
+            isError: true
+          };
+          
+          setMessages(prev => [...prev, errorMessage]);
+          
+          // Add error log
+          const fullUrl = getFullApiUrl();
+          const errorLog = {
+            id: networkLogs.length + 1,
+            timestamp: new Date().toLocaleTimeString(),
+            method: 'POST',
+            url: fullUrl,
+            resourcePath: getResourcePath(fullUrl),
+            responseTime: responseTime,
+            statusCode: response.status,
+            statusText: response.statusText,
+            requestBody: requestBody,
+            requestHeaders: maskSensitiveHeaders(
+              Object.entries(requestHeaders)
+                .map(([key, value]) => `${key}: ${value}`)
+                .join('\n')
+            ),
+            responseBody: JSON.stringify(responseData, null, 2),
+            responseHeaders: maskSensitiveHeaders(
+              Array.from(response.headers.entries())
+                .map(([key, value]) => `${key}: ${value}`)
+                .join('\n')
+            )
+          };
+          
+          setNetworkLogs(prev => [errorLog, ...prev]);
+          setExpandedLogs(prev => new Set([errorLog.id, ...prev]));
+          return;
+        }
+        
         // Extract bot response from the API response
         const botResponse = responseData.choices?.[0]?.message?.content || 'No response received';
         
