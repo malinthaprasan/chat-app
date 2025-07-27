@@ -296,6 +296,7 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
         if (trimmedLine.toLowerCase().startsWith('authorization:') || 
             trimmedLine.toLowerCase().startsWith('api-key:') ||
             trimmedLine.toLowerCase().startsWith('x-api-key:') ||
+            trimmedLine.toLowerCase().startsWith('test-key:') ||
             trimmedLine.toLowerCase().startsWith('bearer ')) {
           // Extract the header name and mask the value
           const colonIndex = trimmedLine.indexOf(':');
