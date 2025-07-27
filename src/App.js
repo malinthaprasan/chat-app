@@ -20,6 +20,10 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  FormControl,
+  FormControlLabel,
+  Radio,
+  RadioGroup,
   useTheme,
   useMediaQuery
 } from '@mui/material';
@@ -57,8 +61,17 @@ function App() {
   const [networkPanelWidth, setNetworkPanelWidth] = useState(Math.floor(window.innerWidth / 3));
   const [isDragging, setIsDragging] = useState(false);
   const [apiConfig, setApiConfig] = useState({
-    url: '',
-    token: ''
+    endpoint1: {
+      url: '',
+      key: '',
+      authType: 'bearer'
+    },
+    endpoint2: {
+      url: '',
+      key: '',
+      authType: 'test-key'
+    },
+    selectedEndpoint: 'endpoint1'
   });
   const messagesEndRef = useRef(null);
   const theme = useTheme();
@@ -86,6 +99,9 @@ function App() {
       setMessages(prev => [...prev, userMessage]);
       setIsLoading(true);
       
+      // Get selected endpoint configuration
+      const selectedConfig = apiConfig[apiConfig.selectedEndpoint];
+      
       try {
         // Prepare request data
         const requestData = {
@@ -101,9 +117,15 @@ function App() {
         const requestBody = JSON.stringify(requestData, null, 2);
         const requestHeaders = {
           'accept': 'application/json',
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiConfig.token}`
+          'Content-Type': 'application/json'
         };
+        
+        // Add appropriate authorization header based on endpoint type
+        if (selectedConfig.authType === 'bearer') {
+          requestHeaders['Authorization'] = `Bearer ${selectedConfig.key}`;
+        } else if (selectedConfig.authType === 'test-key') {
+          requestHeaders['Test-Key'] = selectedConfig.key;
+        }
 
         // Make API call with timing
         const fullUrl = getFullApiUrl();
@@ -188,7 +210,7 @@ function App() {
           }, null, 2),
           requestHeaders: maskSensitiveHeaders(`accept: application/json
 Content-Type: application/json
-Authorization: Bearer ${apiConfig.token}`),
+${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig.key}` : `Test-Key: ${selectedConfig.key}`}`),
           responseBody: JSON.stringify({ error: error.message }, null, 2),
           responseHeaders: 'Content-Type: application/json'
         };
@@ -309,9 +331,10 @@ Authorization: Bearer ${apiConfig.token}`),
     }
   };
 
-  // Function to build full API URL
+          // Function to build full API URL
   const getFullApiUrl = () => {
-    return `${apiConfig.url}/chat/completions?api-version=2024-06-01`;
+    const selectedConfig = apiConfig[apiConfig.selectedEndpoint];
+    return `${selectedConfig.url}/chat/completions?api-version=2024-06-01`;
   };
 
   const NetworkLogsPanel = () => (
@@ -669,28 +692,101 @@ Authorization: Bearer ${apiConfig.token}`),
         <DialogContent>
           <Box sx={{ pt: 1 }}>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Enter the base API URL up to "/chat/completions". The app will automatically append "?api-version=2024-06-01".
+              Configure two endpoints with different authentication methods. Select which endpoint to use for API calls.
             </Typography>
-            <TextField
-              fullWidth
-              label="API URL"
-              value={apiConfig.url}
-              onChange={(e) => setApiConfig(prev => ({ ...prev, url: e.target.value }))}
-              margin="normal"
-              multiline
-              rows={2}
-              helperText="The Azure OpenAI API endpoint URL (up to /chat/completions)"
-            />
-            <TextField
-              fullWidth
-              label="Authorization Token"
-              value={apiConfig.token}
-              onChange={(e) => setApiConfig(prev => ({ ...prev, token: e.target.value }))}
-              margin="normal"
-              multiline
-              rows={4}
-              helperText="The Bearer token for API authentication"
-            />
+            
+            {/* Endpoint Selection */}
+            <FormControl component="fieldset" sx={{ mb: 3, width: '100%' }}>
+              <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>
+                Select Active Endpoint:
+              </Typography>
+              <RadioGroup
+                value={apiConfig.selectedEndpoint}
+                onChange={(e) => setApiConfig(prev => ({ ...prev, selectedEndpoint: e.target.value }))}
+                row
+              >
+                <FormControlLabel 
+                  value="endpoint1" 
+                  control={<Radio />} 
+                  label="Endpoint 1" 
+                />
+                <FormControlLabel 
+                  value="endpoint2" 
+                  control={<Radio />} 
+                  label="Endpoint 2" 
+                />
+              </RadioGroup>
+            </FormControl>
+
+            {/* Endpoint 1 Configuration */}
+            {apiConfig.selectedEndpoint === 'endpoint1' && (
+              <Paper sx={{ p: 2, mb: 3, border: 2, borderColor: 'primary.main' }}>
+                <Typography variant="h6" sx={{ mb: 2, color: 'primary.main' }}>
+                  Endpoint 1
+                </Typography>
+                <TextField
+                  fullWidth
+                  label="API URL"
+                  value={apiConfig.endpoint1.url}
+                  onChange={(e) => setApiConfig(prev => ({ 
+                    ...prev, 
+                    endpoint1: { ...prev.endpoint1, url: e.target.value }
+                  }))}
+                  margin="normal"
+                  multiline
+                  rows={2}
+                  helperText="The Azure OpenAI API endpoint URL (up to /chat/completions)"
+                />
+                <TextField
+                  fullWidth
+                  label="Bearer Token"
+                  value={apiConfig.endpoint1.key}
+                  onChange={(e) => setApiConfig(prev => ({ 
+                    ...prev, 
+                    endpoint1: { ...prev.endpoint1, key: e.target.value }
+                  }))}
+                  margin="normal"
+                  multiline
+                  rows={4}
+                  helperText="The Bearer token for API authentication (Authorization: Bearer <token>)"
+                />
+              </Paper>
+            )}
+
+            {/* Endpoint 2 Configuration */}
+            {apiConfig.selectedEndpoint === 'endpoint2' && (
+              <Paper sx={{ p: 2, border: 2, borderColor: 'primary.main' }}>
+                <Typography variant="h6" sx={{ mb: 2, color: 'primary.main' }}>
+                  Endpoint 2
+                </Typography>
+                <TextField
+                  fullWidth
+                  label="API URL"
+                  value={apiConfig.endpoint2.url}
+                  onChange={(e) => setApiConfig(prev => ({ 
+                    ...prev, 
+                    endpoint2: { ...prev.endpoint2, url: e.target.value }
+                  }))}
+                  margin="normal"
+                  multiline
+                  rows={2}
+                  helperText="The Azure OpenAI API endpoint URL (up to /chat/completions)"
+                />
+                <TextField
+                  fullWidth
+                  label="Test Key"
+                  value={apiConfig.endpoint2.key}
+                  onChange={(e) => setApiConfig(prev => ({ 
+                    ...prev, 
+                    endpoint2: { ...prev.endpoint2, key: e.target.value }
+                  }))}
+                  margin="normal"
+                  multiline
+                  rows={4}
+                  helperText="The Test-Key for API authentication (Test-Key: <key>)"
+                />
+              </Paper>
+            )}
           </Box>
         </DialogContent>
         <DialogActions>
