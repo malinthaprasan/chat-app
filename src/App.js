@@ -41,7 +41,8 @@ import {
   Visibility as VisibilityIcon,
   VisibilityOff as VisibilityOffIcon,
   Stop as StopIcon,
-  Replay as ReplayIcon
+  Replay as ReplayIcon,
+  ContentCopy as CopyIcon
 } from '@mui/icons-material';
 import CleaningServicesOutlinedIcon from '@mui/icons-material/CleaningServicesOutlined';
 import PlagiarismOutlinedIcon from '@mui/icons-material/PlagiarismOutlined';
@@ -488,6 +489,17 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
       setIsLoading(false);
       setAbortController(null);
     }
+  };
+
+  const handleCopyMessage = (messageText) => {
+    setNewMessage(messageText);
+    // Focus on the input field
+    setTimeout(() => {
+      const inputElement = document.querySelector('textarea[placeholder="Enter message"]');
+      if (inputElement) {
+        inputElement.focus();
+      }
+    }, 100);
   };
 
   const handleReplayMessage = (messageText) => {
@@ -1162,31 +1174,52 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
                       {message.timestamp}
                     </Typography>
                     {message.sender === 'user' && (
-                      <Tooltip title="Replay" placement="top">
-                        <IconButton
-                          className="replay-button"
-                          size="small"
-                          onClick={() => handleReplayMessage(message.text)}
-                          sx={{
-                            position: 'absolute',
-                            top: 4,
-                            right: 4,
-                            opacity: 0,
-                            visibility: 'hidden',
-                            transition: 'opacity 0.2s ease, visibility 0.2s ease',
-                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                            color: 'primary.main',
-                            width: 24,
-                            height: 24,
-                            '&:hover': {
-                              backgroundColor: 'rgba(255, 255, 255, 1)',
-                              transform: 'scale(1.1)'
-                            }
-                          }}
-                        >
-                          <ReplayIcon sx={{ fontSize: 16 }} />
-                        </IconButton>
-                      </Tooltip>
+                      <Box sx={{ position: 'absolute', top: 4, right: 4, display: 'flex', gap: 0.5 }}>
+                        <Tooltip title="Copy to input" placement="top">
+                          <IconButton
+                            className="replay-button"
+                            size="small"
+                            onClick={() => handleCopyMessage(message.text)}
+                            sx={{
+                              opacity: 0,
+                              visibility: 'hidden',
+                              transition: 'opacity 0.2s ease, visibility 0.2s ease',
+                              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                              color: 'primary.main',
+                              width: 24,
+                              height: 24,
+                              '&:hover': {
+                                backgroundColor: 'rgba(255, 255, 255, 1)',
+                                transform: 'scale(1.1)'
+                              }
+                            }}
+                          >
+                            <CopyIcon sx={{ fontSize: 16 }} />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Replay" placement="top">
+                          <IconButton
+                            className="replay-button"
+                            size="small"
+                            onClick={() => handleReplayMessage(message.text)}
+                            sx={{
+                              opacity: 0,
+                              visibility: 'hidden',
+                              transition: 'opacity 0.2s ease, visibility 0.2s ease',
+                              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                              color: 'primary.main',
+                              width: 24,
+                              height: 24,
+                              '&:hover': {
+                                backgroundColor: 'rgba(255, 255, 255, 1)',
+                                transform: 'scale(1.1)'
+                              }
+                            }}
+                          >
+                            <ReplayIcon sx={{ fontSize: 16 }} />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
                     )}
                   </Paper>
                 </ListItem>
