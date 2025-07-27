@@ -98,6 +98,18 @@ pre {
   }
 }
 
+/* Typing indicator animation */
+@keyframes typing {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-10px);
+    opacity: 1;
+  }
+}
+
 /* Drag handle styles */
 .drag-handle {
   transition: background-color 0.2s ease;

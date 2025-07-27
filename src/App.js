@@ -791,6 +791,66 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
                   </Paper>
                 </ListItem>
               ))}
+              {isLoading && (
+                <ListItem
+                  sx={{
+                    flexDirection: 'row',
+                    alignItems: 'flex-start',
+                    gap: 1
+                  }}
+                >
+                  <ListItemAvatar>
+                    <Avatar sx={{ bgcolor: 'secondary.main' }}>
+                      <BotIcon />
+                    </Avatar>
+                  </ListItemAvatar>
+                  <Paper
+                    elevation={1}
+                    sx={{
+                      p: 2,
+                      maxWidth: '70%',
+                      backgroundColor: 'white',
+                      color: 'text.primary',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                      <Box
+                        sx={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: '50%',
+                          backgroundColor: 'text.secondary',
+                          animation: 'typing 1.4s infinite ease-in-out',
+                          animationDelay: '0s'
+                        }}
+                      />
+                      <Box
+                        sx={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: '50%',
+                          backgroundColor: 'text.secondary',
+                          animation: 'typing 1.4s infinite ease-in-out',
+                          animationDelay: '0.2s'
+                        }}
+                      />
+                      <Box
+                        sx={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: '50%',
+                          backgroundColor: 'text.secondary',
+                          animation: 'typing 1.4s infinite ease-in-out',
+                          animationDelay: '0.4s'
+                        }}
+                      />
+                    </Box>
+                  </Paper>
+                </ListItem>
+              )}
               <div ref={messagesEndRef} />
             </List>
           </Box>
