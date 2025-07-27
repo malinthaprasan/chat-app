@@ -25,6 +25,8 @@ import {
   FormControlLabel,
   Radio,
   RadioGroup,
+  Select,
+  MenuItem,
   useTheme,
   useMediaQuery
 } from '@mui/material';
@@ -703,6 +705,30 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             AskForBiz
           </Typography>
+          <FormControl size="small" sx={{ width: 180, mr: 2, display: { xs: 'none', md: 'block' } }}>
+            <Select
+              value={apiConfig.selectedEndpoint}
+              onChange={(e) => setApiConfig(prev => ({ ...prev, selectedEndpoint: e.target.value }))}
+              displayEmpty
+              sx={{ 
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                color: 'white',
+                width: '100%',
+                '& .MuiSelect-icon': {
+                  color: 'white'
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'rgba(255, 255, 255, 0.3)'
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'rgba(255, 255, 255, 0.5)'
+                }
+              }}
+            >
+              <MenuItem value="endpoint1">Direct</MenuItem>
+              <MenuItem value="endpoint2">Via Egress GW</MenuItem>
+            </Select>
+          </FormControl>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <IconButton
               color="inherit"
@@ -1039,12 +1065,12 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
                 <FormControlLabel 
                   value="endpoint1" 
                   control={<Radio />} 
-                  label="Endpoint 1" 
+                  label="Direct" 
                 />
                 <FormControlLabel 
                   value="endpoint2" 
                   control={<Radio />} 
-                  label="Endpoint 2" 
+                  label="Via Egress GW" 
                 />
               </RadioGroup>
             </FormControl>
@@ -1053,7 +1079,7 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
             {apiConfig.selectedEndpoint === 'endpoint1' && (
               <Paper sx={{ p: 2, mb: 3, border: 2, borderColor: 'primary.main' }}>
                 <Typography variant="h6" sx={{ mb: 2, color: 'primary.main' }}>
-                  Endpoint 1
+                  Direct
                 </Typography>
                 <TextField
                   fullWidth
@@ -1088,7 +1114,7 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
             {apiConfig.selectedEndpoint === 'endpoint2' && (
               <Paper sx={{ p: 2, border: 2, borderColor: 'primary.main' }}>
                 <Typography variant="h6" sx={{ mb: 2, color: 'primary.main' }}>
-                  Endpoint 2
+                  Via Egress GW
                 </Typography>
                 <TextField
                   fullWidth
