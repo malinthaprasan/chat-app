@@ -498,21 +498,24 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             AskForBiz
           </Typography>
-          <IconButton
-            color="inherit"
-            aria-label="toggle network logs"
-            onClick={() => setLogsPanelOpen(!logsPanelOpen)}
-            sx={{ display: { xs: 'none', md: 'block' } }}
-          >
-            {logsPanelOpen ? <VisibilityOffIcon /> : <VisibilityIcon />}
-          </IconButton>
-          <IconButton
-            color="inherit"
-            aria-label="settings"
-            onClick={() => setShowConfig(true)}
-          >
-            <SettingsIcon />
-          </IconButton>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <IconButton
+              color="inherit"
+              aria-label="toggle network logs"
+              onClick={() => setLogsPanelOpen(!logsPanelOpen)}
+              sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', justifyContent: 'center', height: 40, width: 40 }}
+            >
+              {logsPanelOpen ? <VisibilityOffIcon /> : <VisibilityIcon />}
+            </IconButton>
+            <IconButton
+              color="inherit"
+              aria-label="settings"
+              onClick={() => setShowConfig(true)}
+              sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', justifyContent: 'center', height: 40, width: 40 }}
+            >
+              <SettingsIcon />
+            </IconButton>
+          </Box>
         </Toolbar>
       </AppBar>
 
