@@ -39,6 +39,7 @@ import {
   Visibility as VisibilityIcon,
   VisibilityOff as VisibilityOffIcon
 } from '@mui/icons-material';
+import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
 import './App.css';
 
 function App() {
@@ -447,6 +448,14 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
     setIsDragging(false);
   };
 
+  const handleClearChat = () => {
+    // Keep only the first welcome message
+    setMessages(prev => prev.slice(0, 1));
+    // Clear network logs as well
+    setNetworkLogs([]);
+    setExpandedLogs(new Set());
+  };
+
   // Add and remove event listeners
   useEffect(() => {
     if (isDragging) {
@@ -658,6 +667,14 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
             AskForBiz
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <IconButton
+              color="inherit"
+              aria-label="clear chat"
+              onClick={handleClearChat}
+              sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', justifyContent: 'center', height: 40, width: 40 }}
+            >
+              <CleaningServicesIcon />
+            </IconButton>
             <IconButton
               color="inherit"
               aria-label="toggle network logs"
