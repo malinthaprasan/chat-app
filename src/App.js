@@ -139,7 +139,13 @@ function App() {
         const endTime = performance.now();
         const responseTime = Math.round(endTime - startTime);
 
-        const responseData = await response.json();
+        let responseData;
+        try {
+          responseData = await response.json();
+        } catch (jsonError) {
+          // Handle cases where response has no body or invalid JSON
+          responseData = "";
+        }
         
         // Check for Azure content safety violation
         if (responseData.code === 900514) {
@@ -213,6 +219,48 @@ function App() {
                 .join('\n')
             ),
             responseBody: JSON.stringify(responseData, null, 2),
+            responseHeaders: maskSensitiveHeaders(
+              Array.from(response.headers.entries())
+                .map(([key, value]) => `${key}: ${value}`)
+                .join('\n')
+            )
+          };
+          
+          setNetworkLogs(prev => [errorLog, ...prev]);
+          setExpandedLogs(prev => new Set([errorLog.id, ...prev]));
+          return;
+        }
+        
+        // Check for rate limiting (429)
+        if (response.status === 429) {
+          const errorMessage = {
+            id: messages.length + 2,
+            text: 'Too many requests.',
+            sender: 'bot',
+            timestamp: new Date().toLocaleTimeString(),
+            isError: true
+          };
+          
+          setMessages(prev => [...prev, errorMessage]);
+          
+          // Add error log
+          const fullUrl = getFullApiUrl();
+          const errorLog = {
+            id: networkLogs.length + 1,
+            timestamp: new Date().toLocaleTimeString(),
+            method: 'POST',
+            url: fullUrl,
+            resourcePath: getResourcePath(fullUrl),
+            responseTime: responseTime,
+            statusCode: response.status,
+            statusText: response.statusText,
+            requestBody: requestBody,
+            requestHeaders: maskSensitiveHeaders(
+              Object.entries(requestHeaders)
+                .map(([key, value]) => `${key}: ${value}`)
+                .join('\n')
+            ),
+            responseBody: responseData ? JSON.stringify(responseData, null, 2) : 'No response body',
             responseHeaders: maskSensitiveHeaders(
               Array.from(response.headers.entries())
                 .map(([key, value]) => `${key}: ${value}`)
