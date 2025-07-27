@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 import {
   Box,
   AppBar,
@@ -648,9 +649,62 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
                       borderColor: message.isError ? '#ef5350' : 'transparent'
                     }}
                   >
-                    <Typography variant="body1">
-                      {message.text}
-                    </Typography>
+                    {message.isError ? (
+                      <Typography variant="body1">
+                        {message.text}
+                      </Typography>
+                    ) : (
+                      <Box sx={{ 
+                        '& h1, & h2, & h3, & h4, & h5, & h6': { 
+                          mt: 1, mb: 1, fontWeight: 600 
+                        },
+                        '& p': { 
+                          mb: 1 
+                        },
+                        '& ul, & ol': { 
+                          mb: 1, pl: 2 
+                        },
+                        '& li': { 
+                          mb: 0.5 
+                        },
+                        '& code': { 
+                          backgroundColor: 'grey.100', 
+                          px: 0.5, 
+                          py: 0.25, 
+                          borderRadius: 0.5,
+                          fontFamily: 'monospace',
+                          fontSize: '0.875em'
+                        },
+                        '& pre': { 
+                          backgroundColor: 'grey.100', 
+                          p: 1, 
+                          borderRadius: 1,
+                          overflow: 'auto',
+                          mb: 1
+                        },
+                        '& pre code': { 
+                          backgroundColor: 'transparent',
+                          p: 0
+                        },
+                        '& blockquote': { 
+                          borderLeft: 3, 
+                          borderColor: 'grey.300', 
+                          pl: 2, 
+                          ml: 0,
+                          fontStyle: 'italic',
+                          color: 'text.secondary'
+                        },
+                        '& a': { 
+                          color: 'primary.main',
+                          textDecoration: 'none',
+                          '&:hover': {
+                            textDecoration: 'underline'
+                          }
+                        }
+                      }}>
+                        <ReactMarkdown>{message.text}</ReactMarkdown>
+                      </Box>
+                    )}
                     <Typography 
                       variant="caption" 
                       sx={{ 
