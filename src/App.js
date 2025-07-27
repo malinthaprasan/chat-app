@@ -42,7 +42,9 @@ import {
   VisibilityOff as VisibilityOffIcon,
   Stop as StopIcon,
   Replay as ReplayIcon,
-  ContentCopy as CopyIcon
+  ContentCopy as CopyIcon,
+  ExpandMore as ExpandAllIcon,
+  ExpandLess as CollapseAllIcon
 } from '@mui/icons-material';
 import CleaningServicesOutlinedIcon from '@mui/icons-material/CleaningServicesOutlined';
 import PlagiarismOutlinedIcon from '@mui/icons-material/PlagiarismOutlined';
@@ -402,6 +404,15 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
       }
       return newSet;
     });
+  };
+
+  const handleExpandAll = () => {
+    const allLogIds = networkLogs.map(log => log.id);
+    setExpandedLogs(new Set(allLogIds));
+  };
+
+  const handleCollapseAll = () => {
+    setExpandedLogs(new Set());
   };
 
   // Function to mask sensitive headers
@@ -848,9 +859,39 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
       }}
     >
       <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
-        <Typography variant="h6" sx={{ textAlign: 'center' }}>
-          Network Logs
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Typography variant="h6">
+            Network Logs
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Tooltip title="Expand all" placement="top">
+              <IconButton
+                size="small"
+                onClick={handleExpandAll}
+                disabled={networkLogs.length === 0}
+                sx={{ 
+                  color: 'text.secondary',
+                  '&:hover': { color: 'primary.main' }
+                }}
+              >
+                <ExpandAllIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Collapse all" placement="top">
+              <IconButton
+                size="small"
+                onClick={handleCollapseAll}
+                disabled={expandedLogs.size === 0}
+                sx={{ 
+                  color: 'text.secondary',
+                  '&:hover': { color: 'primary.main' }
+                }}
+              >
+                <CollapseAllIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        </Box>
       </Box>
       
       <Box sx={{ flex: 1, overflow: 'auto', p: 1 }}>
