@@ -36,7 +36,8 @@ import {
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
   Visibility as VisibilityIcon,
-  VisibilityOff as VisibilityOffIcon
+  VisibilityOff as VisibilityOffIcon,
+  Stop as StopIcon
 } from '@mui/icons-material';
 import CleaningServicesOutlinedIcon from '@mui/icons-material/CleaningServicesOutlined';
 import PlagiarismOutlinedIcon from '@mui/icons-material/PlagiarismOutlined';
@@ -60,6 +61,7 @@ function App() {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [expandedLogs, setExpandedLogs] = useState(new Set()); // Start with no logs expanded
   const [isLoading, setIsLoading] = useState(false);
+  const [abortController, setAbortController] = useState(null);
   const [showConfig, setShowConfig] = useState(false);
   const [networkPanelWidth, setNetworkPanelWidth] = useState(Math.floor(window.innerWidth / 3));
   const [isDragging, setIsDragging] = useState(false);
@@ -102,6 +104,10 @@ function App() {
       setMessages(prev => [...prev, userMessage]);
       setIsLoading(true);
       
+      // Create abort controller for this request
+      const controller = new AbortController();
+      setAbortController(controller);
+      
       // Get selected endpoint configuration
       const selectedConfig = apiConfig[apiConfig.selectedEndpoint];
       
@@ -136,7 +142,8 @@ function App() {
         const response = await fetch(fullUrl, {
           method: 'POST',
           headers: requestHeaders,
-          body: requestBody
+          body: requestBody,
+          signal: controller.signal
         });
         const endTime = performance.now();
         const responseTime = Math.round(endTime - startTime);
@@ -316,45 +323,59 @@ function App() {
         setExpandedLogs(prev => new Set([newLog.id, ...prev]));
         
       } catch (error) {
-        console.error('Error making API call:', error);
-        
-        // Add error message
-        const errorMessage = {
-          id: messages.length + 2,
-          text: 'Sorry, I encountered an error while processing your request. Please try again.',
-          sender: 'bot',
-          timestamp: new Date().toLocaleTimeString()
-        };
-        
-        setMessages(prev => [...prev, errorMessage]);
-        
-        // Add error log
-        const fullUrl = getFullApiUrl();
-        const errorLog = {
-          id: networkLogs.length + 1,
-          timestamp: new Date().toLocaleTimeString(),
-          method: 'POST',
-          url: fullUrl,
-          resourcePath: getResourcePath(fullUrl),
-          responseTime: 0, // No response time for errors
-          statusCode: 500,
-          statusText: 'Internal Error',
-          requestBody: JSON.stringify({
-            model: "gpt-4.1",
-            messages: [{ role: "user", content: newMessage }]
-          }, null, 2),
-          requestHeaders: maskSensitiveHeaders(`accept: application/json
+        if (error.name === 'AbortError') {
+          // Request was cancelled by user
+          const cancelMessage = {
+            id: messages.length + 2,
+            text: 'Request cancelled.',
+            sender: 'bot',
+            timestamp: new Date().toLocaleTimeString(),
+            isError: true
+          };
+          setMessages(prev => [...prev, cancelMessage]);
+        } else {
+          console.error('Error making API call:', error);
+          
+          // Add error message
+          const errorMessage = {
+            id: messages.length + 2,
+            text: 'Sorry, I encountered an error while processing your request. Please try again.',
+            sender: 'bot',
+            timestamp: new Date().toLocaleTimeString(),
+            isError: true
+          };
+          
+          setMessages(prev => [...prev, errorMessage]);
+          
+          // Add error log
+          const fullUrl = getFullApiUrl();
+          const errorLog = {
+            id: networkLogs.length + 1,
+            timestamp: new Date().toLocaleTimeString(),
+            method: 'POST',
+            url: fullUrl,
+            resourcePath: getResourcePath(fullUrl),
+            responseTime: 0, // No response time for errors
+            statusCode: 500,
+            statusText: 'Internal Error',
+            requestBody: JSON.stringify({
+              model: "gpt-4.1",
+              messages: [{ role: "user", content: newMessage }]
+            }, null, 2),
+            requestHeaders: maskSensitiveHeaders(`accept: application/json
 Content-Type: application/json
 ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig.key}` : `Test-Key: ${selectedConfig.key}`}`),
-          responseBody: JSON.stringify({ error: error.message }, null, 2),
-          responseHeaders: 'Content-Type: application/json'
-        };
-        
-        setNetworkLogs(prev => [errorLog, ...prev]);
-        setExpandedLogs(prev => new Set([errorLog.id, ...prev]));
+            responseBody: JSON.stringify({ error: error.message }, null, 2),
+            responseHeaders: 'Content-Type: application/json'
+          };
+          
+          setNetworkLogs(prev => [errorLog, ...prev]);
+          setExpandedLogs(prev => new Set([errorLog.id, ...prev]));
+        }
       } finally {
         setIsLoading(false);
         setNewMessage('');
+        setAbortController(null);
       }
     }
   };
@@ -455,6 +476,14 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
     // Clear network logs as well
     setNetworkLogs([]);
     setExpandedLogs(new Set());
+  };
+
+  const handleStopChat = () => {
+    if (abortController) {
+      abortController.abort();
+      setIsLoading(false);
+      setAbortController(null);
+    }
   };
 
   // Add and remove event listeners
@@ -893,25 +922,25 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
                 multiline
                 maxRows={4}
               />
-              <Button
-                variant="contained"
-                onClick={handleSendMessage}
-                disabled={!newMessage.trim() || isLoading}
-                sx={{ minWidth: 'auto', px: 2 }}
-              >
-                {isLoading ? (
-                  <Box sx={{ 
-                    width: 20, 
-                    height: 20, 
-                    border: '2px solid #fff', 
-                    borderTop: '2px solid transparent', 
-                    borderRadius: '50%', 
-                    animation: 'spin 1s linear infinite' 
-                  }} />
-                ) : (
+              {isLoading ? (
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={handleStopChat}
+                  sx={{ minWidth: 'auto', px: 2 }}
+                >
+                  <StopIcon />
+                </Button>
+              ) : (
+                <Button
+                  variant="contained"
+                  onClick={handleSendMessage}
+                  disabled={!newMessage.trim()}
+                  sx={{ minWidth: 'auto', px: 2 }}
+                >
                   <SendIcon />
-                )}
-              </Button>
+                </Button>
+              )}
             </Box>
           </Box>
         </Box>
