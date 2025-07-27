@@ -354,6 +354,7 @@ function App() {
           method: 'POST',
           url: fullUrl,
           resourcePath: getResourcePath(fullUrl),
+          endpointType: apiConfig.selectedEndpoint === 'endpoint1' ? 'DIR' : 'EGW',
           responseTime: responseTime,
           statusCode: response.status,
           statusText: response.statusText,
@@ -1033,11 +1034,11 @@ ${selectedConfig.authType === 'bearer' ? `Authorization: Bearer ${selectedConfig
                 />
                                   <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Chip
-                      label={`[${log.endpointType || 'DIR'}]`}
+                      label={`[${log.endpointType}]`}
                       size="small"
                       sx={{
-                        backgroundColor: (log.endpointType || 'DIR') === 'DIR' ? '#e3f2fd' : '#f3e5f5',
-                        color: (log.endpointType || 'DIR') === 'DIR' ? '#1976d2' : '#7b1fa2',
+                        backgroundColor: log.endpointType === 'DIR' ? '#e3f2fd' : '#f3e5f5',
+                        color: log.endpointType === 'DIR' ? '#1976d2' : '#7b1fa2',
                         fontFamily: 'monospace',
                         fontWeight: 600,
                         fontSize: '0.7rem',
